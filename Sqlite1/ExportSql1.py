@@ -1,7 +1,6 @@
 # Gramps - a GTK+/GNOME based genealogy program
 #
 # Copyright (C) 2008 Douglas S. Blank <doug.blank@gmail.com>
-# Modifications Copyright (C) 2012 W.G. Bell
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -540,12 +539,14 @@ def export_event(db, data):
              description,
              change,
              private)
-    if place_handle != '':
+    if place_handle is not None and place_handle != "":
+        #print place_handle
         db.query("""INSERT INTO place_ref (
                  gid,
                  place_gid) VALUES (?,?);""",
                  gid,
                  place_map[place_handle])
+
     event_map[handle] = gid
     export_date(db, "event", gid, date)
     export_attribute_list(db, "event", gid, attribute_list)
@@ -556,6 +557,7 @@ def export_event(db, data):
 def export_event_ref(db, from_type, from_handle, event_ref):
     (private, note_list, attribute_list, ref, role) = event_ref
     global event_map
+    #print "ref:", from_handle, ref, private
     db.query("""insert INTO event_ref (
                  gid,
                  event_gid,
@@ -918,6 +920,7 @@ def exportData(database, filename, err_dialog=None, option_box=None,
          change, private) = place.serialize()
         global place_map
         place_map[handle] = gid
+        #print handle, gid
         db.query("""INSERT INTO place (
                  gid,
                  title,
