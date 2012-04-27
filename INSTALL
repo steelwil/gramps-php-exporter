@@ -1,0 +1,24 @@
+==Gramps plugin==
+copy Sqlite1/ to the following directory
+~/.gramps/gramps33/plugins/
+
+export your database to gramps.db
+
+this plugin is based on the existing one shipped with Gramps but generates a lot smaller db as it uses gramps ID's and not big UGI's.
+
+==Web php scripts==
+Put all the php files and the images directory in your web site.
+
+Put gramps.db into
+../../.sqlite/
+
+Put all your thumbs in
+thumb/
+
+Put all your images in
+pics/
+
+
+
+2012-04-20
+

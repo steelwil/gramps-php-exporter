@@ -1,0 +1,127 @@
+body
+{
+	background-image: url('images/Web_Mainz_Mid.jpg');
+}
+
+p { margin: 0.5em; } 
+
+.name
+{
+	width: 16em;
+	float: left;
+}
+
+.value
+{
+	width: 20em;
+}
+
+img.person
+{
+	float: right;
+	height: 238px;	
+}
+
+div.fbox, div.mbox
+{
+    position:relative;
+    z-index:10;
+    display:block;
+    font:normal .7em/1.4em sans-serif;
+    text-align:center;
+    text-decoration:none;
+    color: #00029D;
+    width:118px;
+    padding:5px 20px 7px 20px;
+    margin-left:16px;
+    background-color: #BCEAF6;
+    border: solid 1px #000;
+	background:url(images/Web_Gender_Male.png) #BCEAF6 no-repeat top right;
+}
+
+div.fbox
+{
+    background-color: #FFC0CB;
+	background:url(images/Web_Gender_Female.png) #FFC0CB no-repeat top right;
+}
+
+div.AncCol0
+{
+    position:absolute;
+	left: 6px;
+	top: 460px;
+}
+div.AncCol1
+{
+    position:absolute;
+	left: 196px;
+}
+
+div.AncCol2
+{
+    position:absolute;
+	left: 386px;
+}
+div.AncCol3
+{
+    position:absolute;
+	left: 576px;
+}
+
+div.AncCol4
+{
+    position:absolute;
+	left: 766px;
+}
+
+div.AncCol5
+{
+    position:absolute;
+	left: 956px;
+}
+
+div.AncCol6
+{
+	position:absolute;
+	left: 1146px;
+}
+
+
+div.line {
+    position:absolute;
+    z-index:2;
+    width:1px;
+    height: 1px;
+    padding:0;
+    background-color: #00029D;
+}
+
+div.fbox:hover,
+div.mbox:hover
+{
+    position:relative;
+    z-index:999;
+    font-size:1em;
+    text-decoration:none;
+    color: #00029D;
+    width:190px;
+    margin-left:-20px;
+    padding:10px 25px 12px 25px;
+    border: solid 2px #000;
+}
+
+div.AncCol0:hover {
+    margin-left:12px;
+}
+
+div.AncCol3 a:hover {
+    margin-top:-44px;
+}
+
+div.AncCol4:hover {
+    margin-left:-60px;
+}
+
+
+
+
