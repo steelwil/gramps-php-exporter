@@ -317,15 +317,21 @@
 				year1,
 				month1,
 				day1,
-				E.description
+				E.description,
+				P.title
 			from event_ref ER
 			inner join event E
 			on ER.event_gid = E.gid
-				and ER.private = E.private
+				and E.private = 0
+			left join place_ref PR
+			on PR.gid = E.gid
+			left join place P
+			on P.gid = PR.place_gid
+				and P.private = 0
 			left join date D
 			on ER.event_gid = D.gid
-			where ER.gid = '".$family_gid."'
-				and ER.private = 0");
+			where ER.private = 0
+				and ER.gid = '".$family_gid."'");
 
 		for($i=1; $row = $result->fetch(); $i++)
 		{
@@ -336,7 +342,10 @@
 			elseif ($type == 7)
 				$name = 'divorced ';
 			$date = do_date($row['year1'], $row['month1'], $row['day1']);
-			$name = $name.$date.' '.$row['description'];
+			if (is_null($row['title']))
+				$name = $name.$date.' '.$row['description'];
+			else
+				$name = $name.$date.' '.$row['description'].' at '.$row['title'];
 
 			print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$name."</span></p>\n");
 		}
