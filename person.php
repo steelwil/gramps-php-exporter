@@ -115,7 +115,8 @@
 				|| day1 as date1,
 				description,
 				P.title,
-				D.quality
+				D.quality,
+				P.gid
 			from event_ref R
 			inner join event E
 				on E.gid = R.event_gid
@@ -196,10 +197,11 @@
 			$place = $row['title'];
 			if (!is_null($place))
 			{
+				$place_gid = $row['gid'];
 				if ($description != "")
-					$description = $description." at ".$place;
+					$description = $description." at <a href=\"place.php?gid=".$place_gid."\">".$place."</a>";
 				else
-					$description = $place;
+					$description = "<a href=\"place.php?gid=".$place_gid."\">".$place."</a>";
 			}
 
 			print("<p><span class=\"name\">".$eventtype.":</span> <span class=\"value\">".$description."</span></p>\n");
@@ -318,7 +320,8 @@
 				month1,
 				day1,
 				E.description,
-				P.title
+				P.title,
+				P.gid
 			from event_ref ER
 			inner join event E
 			on ER.event_gid = E.gid
@@ -342,11 +345,14 @@
 			elseif ($type == 7)
 				$name = 'divorced ';
 			$date = do_date($row['year1'], $row['month1'], $row['day1']);
-			if (is_null($row['title']))
-				$name = $name.$date.' '.$row['description'];
-			else
-				$name = $name.$date.' '.$row['description'].' at '.$row['title'];
 
+			$place = $row['title'];
+			$name = $name.$date.' '.$row['description'];
+			if (!is_null($place))
+			{
+				$place_gid = $row['gid'];
+				$name = $name." at <a href=\"place.php?gid=".$place_gid."\">".$place."</a>";
+			}
 			print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$name."</span></p>\n");
 		}
 		unset($row);
@@ -549,8 +555,11 @@
 					$path = $row['path'];
 					 break;
 			}
+			$desc = $row['desc'];
+			if ($desc == "" || is_null($desc))
+				$desc = $row['path'];
 
-			print("<p><span class=\"name\">".$eventtype.":</span> <span class=\"value\"><a href=\"".$path."\">".$row['path']."</a></span></p>\n");
+			print("<p><span class=\"name\">".$eventtype.":</span> <span class=\"value\"><a href=\"".$path."\">".$desc."</a></span></p>\n");
 		}
 		unset($row);
 	}
