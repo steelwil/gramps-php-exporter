@@ -21,12 +21,52 @@
 	$name;
 	$gen = 0;
 
-	function do_date($year, $month, $day)
+	function do_date($year, $month, $day, $modifier, $quality)
 	{
 		$res = '';
+
+		switch($quality)
+		{
+			case 0:
+				break; // regular
+			case 1:
+				$res = "Estimated ";
+				 break;
+			case 2:
+				$res = "Calculated ";
+				 break;
+			default:
+				$res = "Unknown quality ".$quality." ";
+		}
+
+		switch($modifier)
+		{
+			case 0:
+				 break; // regular
+			case 1:
+				$res = $res."Before ";
+				 break;
+			case 2:
+				$res = $res."After ";
+				 break;
+			case 3:
+				$res = "Estimated "; // About
+				 break;
+			case 4:
+				$res = $res."Range ";
+				 break;
+			case 5:
+				$res = $res."Span ";
+				 break;
+			case 6:
+				 break; // text only
+			default:
+				$res = $res."Unknown modifier ".$modifier." ";
+		}
+
 		if ($year > 0)
 		{
-			$res = $year;
+			$res = $res.$year;
 			if ($month > 0)
 			{
 				if ($month < 10)
@@ -108,13 +148,12 @@
 	{
 		$result = $db->query(
 			"select the_type0,
-				year1 ||
-				case when month1 < 10 then '-0' else '-' end
-				|| month1 ||
-				case when day1 < 10 then '-0' else '-' end
-				|| day1 as date1,
+				year1,
+				month1,
+				day1,
 				description,
 				P.title,
+				D.modifier,
 				D.quality,
 				P.gid
 			from event_ref R
@@ -160,6 +199,9 @@
 				case 25:
 					$eventtype = "Degree";
 					 break;
+				case 28:
+					$eventtype = "Emigration";
+					 break;
 				case 29:
 					$eventtype = "First Communion";
 					 break;
@@ -181,18 +223,13 @@
 				default:
 					$eventtype = "Unknown event ".$row['the_type0'];
 			}
-	    	if ($row['quality'] == 1)
-	    		$date_qual = "estimated ";
-	    	else
-	    		$date_qual = "";
 
-			$date = $row['date1'];
-			if (is_null($date))
-				$date = "";
-			else
-				$date = $date.' ';
+			$date = do_date($row['year1'], $row['month1'], $row['day1'], $row['modifier'], $row['quality']);
+			$descrip = $row['description'];
+			if ($descrip == "Estimated death date" || $descrip == "Estimated birth date")
+				$descrip = "";
 
-			$description = $date_qual.$date.$row['description'];
+			$description = $date.' '.$descrip;
 
 			$place = $row['title'];
 			if (!is_null($place))
@@ -319,6 +356,8 @@
 				year1,
 				month1,
 				day1,
+				D.modifier,
+				D.quality,
 				E.description,
 				P.title,
 				P.gid
@@ -334,6 +373,7 @@
 			left join date D
 			on ER.event_gid = D.gid
 			where ER.private = 0
+
 				and ER.gid = '".$family_gid."'");
 
 		for($i=1; $row = $result->fetch(); $i++)
@@ -344,7 +384,7 @@
 				$name = 'married ';
 			elseif ($type == 7)
 				$name = 'divorced ';
-			$date = do_date($row['year1'], $row['month1'], $row['day1']);
+			$date = do_date($row['year1'], $row['month1'], $row['day1'], $row['modifier'], $row['quality']);
 
 			$place = $row['title'];
 			$name = $name.$date.' '.$row['description'];
@@ -390,7 +430,6 @@
 				and F.gid = '".$family_gid."'
 				and F.private = 0
 			order by R.sortval");
-
 		for($i=1; $row = $result->fetch(); $i++)
 		{
 			$name = "";

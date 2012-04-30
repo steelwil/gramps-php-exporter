@@ -18,6 +18,70 @@
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+	function do_date($year, $month, $day, $modifier, $quality)
+	{
+		$res = '';
+
+		switch($quality)
+		{
+			case 0:
+				break; // regular
+			case 1:
+				$res = "Estimated ";
+				 break;
+			case 2:
+				$res = "Calculated ";
+				 break;
+			default:
+				$res = "Unknown quality ".$quality." ";
+		}
+
+		switch($modifier)
+		{
+			case 0:
+				 break; // regular
+			case 1:
+				$res = $res."Before ";
+				 break;
+			case 2:
+				$res = $res."After ";
+				 break;
+			case 3:
+				$res = "Estimated "; // About
+				 break;
+			case 4:
+				$res = $res."Range ";
+				 break;
+			case 5:
+				$res = $res."Span ";
+				 break;
+			case 6:
+				 break; // text only
+			default:
+				$res = $res."Unknown modifier ".$modifier." ";
+		}
+
+		if ($year > 0)
+		{
+			$res = $res.$year;
+			if ($month > 0)
+			{
+				if ($month < 10)
+					$res = $res."-0".$month;
+				else
+					$res = $res."-".$month;
+				if ($day > 0)
+				{
+					if ($day < 10)
+						$res = $res."-0".$day;
+					else
+						$res = $res."-".$day;
+				}
+			}
+		}
+		return $res;
+	}
+
 	function do_place($db, $gid)
 	{
 		// do place
@@ -25,7 +89,7 @@
 		$result = $db->query(
 			"select
 				P.title,
-				P.long,
+				ltrim(P.long) as long,
 				P.lat,
 				L.street,
 				L.locality,
@@ -53,7 +117,7 @@
 			$long = $row['long'];
 			$lat = $row['lat'];
 			if ($long != "" && !is_null($long))
-				print("<p><span class=\"name\">Location:</span> <span class=\"value\">".'<a href="http://maps.google.com/maps?q='.$lat.','.$long.'&t=h&z=5">'.$lat.', '.$long."</a></span></p>\n");
+				print("<p><span class=\"name\">Location:</span> <span class=\"value\">".'<a href="http://maps.google.com/maps?q='.$lat.','.$long.'&amp;t=h&amp;z=6">'.$lat.', '.$long."</a></span></p>\n");
 
 			$street = $row['street'];
 			if ($street != "" && !is_null($street))
@@ -122,6 +186,128 @@
 		unset($row);
 	}
 
+	function do_reference($db, $gid)
+	{
+		unset($result);
+		$result = $db->query(
+			"select
+				PR.place_gid,
+				ER.gid,
+				N.first_name||' '||S.surname as Name,
+				E.the_type0,
+				E.description,
+				D.year1,
+				D.month1,
+				D.day1,
+				D.modifier,
+				D.quality,
+				F.father_gid,
+				FN.first_name||' '||FS.surname as FName,
+				F.mother_gid,
+				MN.first_name||' '||MS.surname as MName
+			from place_ref PR
+			left join event E
+			on E.gid = PR.gid
+				and E.private = 0
+			left join date D
+				on E.gid = D.gid
+			left join event_ref ER
+				on E.gid = ER.event_gid
+				and ER.private = 0
+			left join name N
+				on N.gid = ER.gid
+				and N.private = 0
+			left join surname S
+				on N.gid = S.gid
+			left join family F
+				on F.gid = ER.gid
+			left join name FN
+				on FN.gid = F.father_gid
+				and FN.private = 0
+			left join surname FS
+				on FS.gid = F.father_gid
+			left join name MN
+				on MN.gid = F.mother_gid
+				and MN.private = 0
+			left join surname MS
+				on MS.gid = F.mother_gid
+			where PR.place_gid = '".$gid."'
+			order by D.year1, D.month1, D.day1");
+
+		for($i=0; $row = $result->fetch(); $i++)
+		{
+			if ($i == 0)
+			{
+				print("\n<h3>References</h3>\n");
+			}
+			$date = do_date($row['year1'], $row['month1'], $row['day1'], $row['modifier'], $row['quality']);
+			switch($row['the_type0'])
+			{
+				case 1:
+					$eventtype = "Marriage";
+					 break;
+				case 7:
+					$eventtype = "Divorce";
+					 break;
+				case 12:
+					$eventtype = "Birth";
+					 break;
+				case 13:
+					$eventtype = "Death";
+					 break;
+				case 15:
+					$eventtype = "Baptism";
+					 break;
+				case 19:
+					 $eventtype = "Burial";
+					 break;
+				case 24:
+					$eventtype = "Cremation";
+					 break;
+				case 25:
+					$eventtype = "Degree";
+					 break;
+				case 28:
+					$eventtype = "Emigration";
+					 break;
+				case 29:
+					$eventtype = "First Communion";
+					 break;
+				case 30:
+					$eventtype = "Immigration";
+					 break;
+				case 33:
+					$eventtype = "Military Service";
+					 break;
+				case 37:
+					$eventtype = "Occupation";
+					 break;
+				case 41:
+					$eventtype = "Religion";
+					 break;
+				case 42:
+					$eventtype = "Residence";
+					 break;
+				default:
+					$eventtype = "Unknown event ".$row['the_type0'];
+			}
+			$ref_gid = $row['gid'];
+			$descr = "";
+			if ($ref_gid[0] == 'I')
+			{
+				$descr = "<a href=\"person.php?gid=".$ref_gid."\">".$row['Name']."</a>";
+			}
+			else
+			{
+				$descr = "<a href=\"person.php?gid=".$row['father_gid']."\">".$row['FName']."</a> and <a href=\"person.php?gid=".$row['mother_gid']."\">".$row['MName']."</a>";
+			}
+
+			print("<p>".$date." ".$eventtype." ".$descr."</p>\n");
+		}
+		unset($row);
+
+	}
+
 	require_once 'template.php';
 	echo head('Place', '');
 	try
@@ -133,6 +319,8 @@
 		do_place($db, $gid);
 
 		do_url($db, $gid);
+
+		do_reference($db, $gid);
 
 		// close the database connection
 		$db = NULL;
