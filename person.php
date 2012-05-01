@@ -103,7 +103,7 @@
 		{
 			$pic = $row['path'];
 			$pic = substr($pic, strrpos($pic, "/"));
-			$img = "<p><img class=\"person\" src=\"pics//".$pic."\" alt=\"".$row['desc']."\" /></p>";
+			$img = "<p><img class=\"person\" src=\"pics".$pic."\" alt=\"".$row['desc']."\" /></p>";
 		}
 
 

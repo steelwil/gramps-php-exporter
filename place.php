@@ -186,6 +186,31 @@
 		unset($row);
 	}
 
+	function do_notes($db, $gid)
+	{
+		unset($result);
+		$result = $db->query(
+			"select
+				text,
+				note_type1
+			from note N
+			inner join note_ref R
+			on R.note_gid = N.gid
+			where R.gid = '".$gid."'
+				and private  = 0");
+
+		for($i=1; $row = $result->fetch(); $i++)
+		{
+			if ($i == 1)
+			{
+				print("\n<h3>Notes</h3>\n");
+			}
+
+			print("<p><span class=\"value\">".$i.'. '.$row['text']."</span></p>\n");
+		}
+		unset($row);
+	}
+
 	function do_reference($db, $gid)
 	{
 		unset($result);
@@ -319,6 +344,8 @@
 		do_place($db, $gid);
 
 		do_url($db, $gid);
+
+		do_notes($db, $gid);
 
 		do_reference($db, $gid);
 

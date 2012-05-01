@@ -40,8 +40,7 @@ else
 function foot()
 {
 	//$html = "<p>Copyright 2010 - " . date('Y') . "</p>
-	$html = "</body>
-	</html>";
+	$html = "</body>\n</html>";
    return $html;
 }
 ?>
