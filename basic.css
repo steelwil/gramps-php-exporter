@@ -21,7 +21,7 @@ div.letter
 
 }
 
-div.place, div.source
+div.place, div.source, div.surname
 {
 	display:inline-block;
 	width: 18em;

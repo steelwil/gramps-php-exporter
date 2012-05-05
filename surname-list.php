@@ -28,15 +28,24 @@
     //now output the data to a simple html table...
 
     $result = $db->query('SELECT surname, count(1) as Number from surname group by surname');
-    foreach($result as $row)
+ 	$prevLetter = 'ZZZ';
+   foreach($result as $row)
     {
 		$surname = $row['surname'];
 		if ($surname == '')
 		{
 			$surname = "Unknown";
 		}
-		print("<p><span class=\"name\"><a href=\"surname.php?surname=".$surname."\">".$surname."</a></span> <span class=\"value\">".$row['Number']."</span></p>\n");
+		if ($prevLetter != $surname[0])
+		{
+			if ($prevLetter != 'ZZZ')
+				print("</div>\n");
+			$prevLetter = $surname[0];
+			print("<div class=\"section\">\n\t<div class=\"letter\">".$prevLetter."</div>\n");
+		}
+		print("\t<div class=\"surname\"><a href=\"surname.php?surname=".$surname."\">".$surname."</a> (".$row['Number'].")</div>\n");
     }
+	print("</div>\n");
 
     // close the database connection
     $db = NULL;

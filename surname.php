@@ -2,20 +2,20 @@
 /*
  Grampsphpexporter.- export gramps genealogy program to the web
 
- Copyright (C) 2012  William Bell <william.bell@frog.za.net>
+	Copyright (C) 2012  William Bell <william.bell@frog.za.net>
 
-    Grampsphpexporter is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	Grampsphpexporter is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    Grampsphpexporter is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	Grampsphpexporter is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
   require_once 'template.php';
   echo head('Surname', '');
@@ -27,12 +27,12 @@
 	{
 		$surname = "";
 	}
-   //open the database
-    $db = new PDO('sqlite:../../.sqlite/gramps.db');
+	//open the database
+	$db = new PDO('sqlite:../../.sqlite/gramps.db');
 
-    //get all names with a specific surname
-    $result = $db->query(
-	    "select
+	//get all names with a specific surname
+	$result = $db->query(
+		"select
 			P.gid as gid,
 			P.gender as gender,
 			first_name,
@@ -55,33 +55,43 @@
 		where S.surname = '".$surname."'
 		group by P.gid, first_name
 		order by first_name");
-    foreach($result as $row)
-    {
-    	$gid = $row['gid'];
-    	$descrip = '';
-    	if ($row['quality'] == 1)
-    		$descrip = "estimated ";
-    	else
-    		$descrip = "";
-    	$descrip = $descrip.$row['year1'];
-    	if ($descrip == '')
-    		$descrip = "&nbsp;";
-    	$first_name = $row['first_name'];
-    	$gender = $row['gender'];
-    	if ($first_name == '')
-    	{
-    		if ($gender == 0)
-    			$first_name = "Unknown Female";
-    		elseif ($gender == 1)
-    			$first_name = "Unknown Male";
-    		else
+
+ 	$prevLetter = 'ZZZ';
+	foreach($result as $row)
+	{
+		$gid = $row['gid'];
+		$descrip = '';
+		if ($row['quality'] == 1)
+			$descrip = "estimated ";
+		else
+			$descrip = "";
+		$descrip = $descrip.$row['year1'];
+		if ($descrip == '')
+			$descrip = "&nbsp;";
+		$first_name = $row['first_name'];
+		$gender = $row['gender'];
+		if ($first_name == '')
+		{
+			if ($gender == 0)
+				$first_name = "Unknown Female";
+			elseif ($gender == 1)
+				$first_name = "Unknown Male";
+			else
 				$first_name = "Unknown";
 		}
+		if ($prevLetter != $first_name[0])
+		{
+			if ($prevLetter != 'ZZZ')
+				print("</div>\n");
+			$prevLetter = $first_name[0];
+			print("<div class=\"section\">\n\t<div class=\"letter\">".$prevLetter."</div>\n");
+		}
 		print("<p><span class=\"name\"><a href=\"person.php?gid=".$gid."\">".$first_name."</a></span> <span class=\"value\">".$descrip."</span></p>\n");
-    }
+	}
+	print("</div>\n");
 
-    // close the database connection
-    $db = NULL;
+	// close the database connection
+	$db = NULL;
   }
   catch(PDOException $e)
   {
