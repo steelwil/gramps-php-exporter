@@ -1,0 +1,5 @@
+This exports your Gramps database to a SQLite database.
+
+Additionally there are some PHP scripts to display your database on the web.
+
+All privacy settings are honoured.
