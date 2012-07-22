@@ -27,7 +27,12 @@
 
     //now output the data to a simple html table...
 
-    $result = $db->query('SELECT surname, count(1) as Number from surname group by surname');
+    $result = $db->query('
+		select surname, count(1) as Number
+		from surname
+		group by surname
+		order by upper(surname)'
+    );
  	$prevLetter = 'ZZZ';
    foreach($result as $row)
     {
@@ -36,11 +41,12 @@
 		{
 			$surname = "Unknown";
 		}
-		if ($prevLetter != $surname[0])
+		$currentLetter = strtoupper($surname[0]);
+		if ($prevLetter != $currentLetter)
 		{
 			if ($prevLetter != 'ZZZ')
 				print("</div>\n");
-			$prevLetter = $surname[0];
+			$prevLetter = $currentLetter;
 			print("<div class=\"section\">\n\t<div class=\"letter\">".$prevLetter."</div>\n");
 		}
 		print("\t<div class=\"surname\"><a href=\"surname.php?surname=".$surname."\">".$surname."</a> (".$row['Number'].")</div>\n");
