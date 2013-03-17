@@ -5,12 +5,6 @@ body
 
 p { margin: 0.5em; }
 
-.name
-{
-	width: 16em;
-	float: left;
-}
-
 div.letter
 {
 	clear: both;
@@ -21,7 +15,7 @@ div.letter
 
 }
 
-div.place, div.source, div.surname
+div.place, div.source, div.surname, div.name
 {
 	display:inline-block;
 	width: 18em;

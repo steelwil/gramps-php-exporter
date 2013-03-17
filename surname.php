@@ -28,7 +28,7 @@
 		$surname = "";
 	}
 	//open the database
-	$db = new PDO('sqlite:../../.sqlite/gramps.db');
+	$db = new PDO('sqlite:../../.sqlite/gramps1.db');
 
 	//get all names with a specific surname
 	$result = $db->query(
@@ -36,9 +36,7 @@
 			P.gid as gid,
 			P.gender as gender,
 			first_name,
-			max(D.year1) as year1,
-			max(D.month1) as month1,
-			max(D.day1) as day1,
+			max(D.date1) as date1,
 			max(D.quality) as quality
 		from name N
 		inner join person P
@@ -49,7 +47,7 @@
 			on ER.gid = P.gid
 		left join event E
 			on ER.event_gid = E.gid
-				and E.the_type0 = 12
+				and E.the_type = 12
 		left join date D
 			on D.gid = E.gid
 		where S.surname = '".$surname."'
@@ -60,21 +58,17 @@
 	foreach($result as $row)
 	{
 		$gid = $row['gid'];
-		$descrip = '';
-		if ($row['quality'] == 1)
-			$descrip = "estimated ";
-		else
+		$descrip = '*';
+		$descrip = substr($descrip.$row['date1'], 0, 5);
+		if ($descrip == '*')
 			$descrip = "";
-		$descrip = $descrip.$row['year1'];
-		if ($descrip == '')
-			$descrip = "&nbsp;";
 		$first_name = $row['first_name'];
 		$gender = $row['gender'];
 		if ($first_name == '')
 		{
-			if ($gender == 0)
+			if ($gender == 1)
 				$first_name = "Unknown Female";
-			elseif ($gender == 1)
+			elseif ($gender == 0)
 				$first_name = "Unknown Male";
 			else
 				$first_name = "Unknown";
@@ -86,7 +80,7 @@
 			$prevLetter = $first_name[0];
 			print("<div class=\"section\">\n\t<div class=\"letter\">".$prevLetter."</div>\n");
 		}
-		print("<p><span class=\"name\"><a href=\"person.php?gid=".$gid."\">".$first_name."</a></span> <span class=\"value\">".$descrip."</span></p>\n");
+		print("\t<div class=\"name\"><a href=\"person.php?gid=".$gid."\">".$first_name."</a> ".$descrip."</div>\n");
 	}
 	print("</div>\n");
 

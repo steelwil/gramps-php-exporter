@@ -18,7 +18,7 @@
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-	function do_date($year, $month, $day, $modifier, $quality)
+	function do_date($date1, $modifier, $quality)
 	{
 		$res = '';
 
@@ -61,24 +61,7 @@
 				$res = $res."Unknown modifier ".$modifier." ";
 		}
 
-		if ($year > 0)
-		{
-			$res = $res.$year;
-			if ($month > 0)
-			{
-				if ($month < 10)
-					$res = $res."-0".$month;
-				else
-					$res = $res."-".$month;
-				if ($day > 0)
-				{
-					if ($day < 10)
-						$res = $res."-0".$day;
-					else
-						$res = $res."-".$day;
-				}
-			}
-		}
+		$res = $res.$date1;
 		return $res;
 	}
 
@@ -102,11 +85,11 @@
 			left join location L
 			on P.gid = L.gid
 			left join url U
-			on P.gid = U.ref_gid
+			on P.gid = U.gid
 				and U.private = 0
-
 			where P.private = 0
 				and P.gid = '".$gid."'");
+
 		if ($row = $result->fetch())
 		{
 			$title = $row['title'];
@@ -154,10 +137,10 @@
 		$result = $db->query(
 			"select
 				path,
-				desc,
-				type0
+				description,
+				the_type
 			from url
-			where ref_gid = '".$gid."'
+			where gid = '".$gid."'
 				and private = 0");
 
 		for($i=0; $row = $result->fetch(); $i++)
@@ -166,18 +149,18 @@
 			{
 				print("\n<h3>Web Links</h3>\n");
 			}
-			switch($row['type0'])
+			switch($row['the_type'])
 			{
 				case 1:
-					$eventtype = "e-mail";
-					$path = "mailto:".$row['path'];
-					break;
-				case 2:
 					$eventtype = "Web Page";
 					$path = $row['path'];
 					 break;
+				case 2:
+					$eventtype = "e-mail";
+					$path = "mailto:".$row['path'];
+					break;
 			}
-			$desc = $row['desc'];
+			$desc = $row['description'];
 			if ($desc == "" || is_null($desc))
 				$desc = $row['path'];
 
@@ -192,7 +175,7 @@
 		$result = $db->query(
 			"select
 				text,
-				note_type1
+				preformatted
 			from note N
 			inner join note_ref R
 			on R.note_gid = N.gid
@@ -219,12 +202,10 @@
 				PR.place_gid,
 				ER.gid,
 				N.first_name||' '||S.surname as Name,
-				E.the_type0,
+				E.the_type as EventType,
 				E.description,
-				D.year1,
-				D.month1,
-				D.day1,
-				D.modifier,
+				D.date1,
+				D.the_type,
 				D.quality,
 				F.father_gid,
 				FN.first_name||' '||FS.surname as FName,
@@ -257,7 +238,7 @@
 			left join surname MS
 				on MS.gid = F.mother_gid
 			where PR.place_gid = '".$gid."'
-			order by D.year1, D.month1, D.day1");
+			order by D.date1");
 
 		for($i=0; $row = $result->fetch(); $i++)
 		{
@@ -265,8 +246,8 @@
 			{
 				print("\n<h3>References</h3>\n");
 			}
-			$date = do_date($row['year1'], $row['month1'], $row['day1'], $row['modifier'], $row['quality']);
-			switch($row['the_type0'])
+			$date = do_date($row['date1'], $row['the_type'], $row['quality']);
+			switch($row['EventType'])
 			{
 				case 1:
 					$eventtype = "Marriage";
@@ -314,7 +295,7 @@
 					$eventtype = "Residence";
 					 break;
 				default:
-					$eventtype = "Unknown event ".$row['the_type0'];
+					$eventtype = "Unknown event ".$row['EventType'];
 			}
 			$ref_gid = $row['gid'];
 			$descr = "";
@@ -339,7 +320,7 @@
 	{
 		$gid = $_GET["gid"];
 		//open the database
-		$db = new PDO('sqlite:../../.sqlite/gramps.db');
+		$db = new PDO('sqlite:../../.sqlite/gramps1.db');
 
 		do_place($db, $gid);
 

@@ -23,18 +23,19 @@
   try
   {
     //open the database
-    $db = new PDO('sqlite:../../.sqlite/gramps.db');
+    $db = new PDO('sqlite:../../.sqlite/gramps1.db');
 
     //now output the data to a simple html table...
 
     $result = $db->query('
-		select surname, count(1) as Number
+		select
+			surname,
+			count(1) as Number
 		from surname
 		group by surname
-		order by upper(surname)'
-    );
+		order by upper(surname)');
  	$prevLetter = 'ZZZ';
-   foreach($result as $row)
+    foreach($result as $row)
     {
 		$surname = $row['surname'];
 		if ($surname == '')

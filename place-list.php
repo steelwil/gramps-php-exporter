@@ -23,7 +23,7 @@
   try
   {
     //open the database
-    $db = new PDO('sqlite:../../.sqlite/gramps.db');
+    $db = new PDO('sqlite:../../.sqlite/gramps1.db');
 
     //now output the data to a simple html table...
 
@@ -42,7 +42,8 @@
 		{
 			$title = "Unknown";
 		}
-		if ($prevLetter != $title[0])
+		$currentLetter = strtoupper($title[0]);
+		if ($prevLetter != $currentLetter)
 		{
 			if ($prevLetter != 'ZZZ')
 				print("</div>\n");

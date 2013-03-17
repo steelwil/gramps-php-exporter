@@ -21,7 +21,7 @@
 	$name;
 	$gen = 0;
 
-	function do_date($year, $month, $day, $modifier, $quality)
+	function do_date($date1, $modifier, $quality)
 	{
 		$res = '';
 
@@ -64,24 +64,8 @@
 				$res = $res."Unknown modifier ".$modifier." ";
 		}
 
-		if ($year > 0)
-		{
-			$res = $res.$year;
-			if ($month > 0)
-			{
-				if ($month < 10)
-					$res = $res."-0".$month;
-				else
-					$res = $res."-".$month;
-				if ($day > 0)
-				{
-					if ($day < 10)
-						$res = $res."-0".$day;
-					else
-						$res = $res."-".$day;
-				}
-			}
-		}
+		$res = $res.$date1;
+
 		return $res;
 	}
 
@@ -92,7 +76,7 @@
 		$result = $db->query(
 			"select
 				path,
-				desc
+				description
 			from media_ref MR
 			inner join media M
 				on M.gid = MR.media_gid
@@ -112,7 +96,9 @@
 				S.gid as gid,
 				P.gender as gender,
 				N.first_name,
-				S.surname
+				S.surname,
+				N.call,
+				N.nick
 			from person P
 			inner join surname S
 				on P.gid = S.gid
@@ -129,15 +115,21 @@
 			echo head('Bell Family Tree - '.$name, $surname);
 
 			print("\n<h3>".$name."</h3>\n");
+			if ($row['call'] != '')
+				print("<p><span class=\"name\">Called:</span> <span class=\"value\">".$row['call']."</span></p>\n");
+			if ($row['nick'] != '')
+				print("<p><span class=\"name\">Nick:</span> <span class=\"value\">".$row['nick']."</span></p>\n");
 			if ($img != '')
 				print($img);
 			$gender = 'Unknown';
 			GLOBAL $genderID;
 			$genderID = $row['gender'];
- 			if ($genderID == 1)
-				$gender = "Male";
-			else if ($genderID == 0)
+ 			if ($genderID == 'F')
 				$gender = "Female";
+			else if ($genderID == 'M')
+				$gender = "Male";
+			else
+				$gender = "Unknown";
 			print("<p><span class=\"name\">Gender:</span> <span class=\"value\">".$gender."</span></p>\n");
 			break;
    		}
@@ -147,13 +139,11 @@
 	function do_events($db, $gid)
 	{
 		$result = $db->query(
-			"select the_type0,
-				year1,
-				month1,
-				day1,
+			"select E.the_type as EventType,
+				D.date1,
 				description,
 				P.title,
-				D.modifier,
+				D.the_type,
 				D.quality,
 				P.gid
 			from event_ref R
@@ -173,7 +163,7 @@
 			if ($i == 0)
 				print("\n<h3>Events</h3>\n");
 
-			switch($row['the_type0'])
+			switch($row['EventType'])
 			{
 				case 1:
 					$eventtype = "Marriage";
@@ -221,10 +211,10 @@
 					$eventtype = "Residence";
 					 break;
 				default:
-					$eventtype = "Unknown event ".$row['the_type0'];
+					$eventtype = "Unknown event ".$row['the_type'];
 			}
 
-			$date = do_date($row['year1'], $row['month1'], $row['day1'], $row['modifier'], $row['quality']);
+			$date = do_date($row['date1'], $row['modifier'], $row['quality']);
 			$descrip = $row['description'];
 			if ($descrip == "Estimated death date" || $descrip == "Estimated birth date")
 				$descrip = "";
@@ -254,7 +244,7 @@
 		$relation[3]="(step)";
 		$relation[4]="(sponsored)";
 		$relation[5]="(foster)";
-		$relation[6]="(unknown)";
+		$relation[6]="(custom)";
 		$relation[7]="(unknown 7)";
 		$relation[8]="(unknown 8)";
 
@@ -264,10 +254,10 @@
 				F.gid as family_gid,
 				father_gid,
 				FN.first_name||' '||FS.surname as FatherName,
-				CR.frel0,
+				CR.frel,
 				mother_gid,
 				MN.first_name||' '||MS.surname as MotherName,
-				CR.mrel0
+				CR.mrel
 			from child_ref CR
 			inner join family F
 				on F.gid = CR.gid
@@ -290,7 +280,7 @@
 		{
 			if ($i == 0)
 				print("\n<h3>Parents</h3>\n");
-			$rel = $row[frel0];
+			$rel = $row[frel];
 			$relationship = $relation[$rel];
 			$father = $row['father_gid'];
 			if (!is_null($father))
@@ -298,7 +288,7 @@
 			else
 				print("<p><span class=\"name\">Father:</span> <span class=\"value\">&nbsp;</span></p>\n");
 
-			$rel = $row[mrel0];
+			$rel = $row[mrel];
 			$relationship = $relation[$rel];
 			$mother = $row['mother_gid'];
 			if (!is_null($mother))
@@ -309,7 +299,6 @@
 		unset($row);
 		$result = $db->query(
 			"select
-				CR2.sortval,
 				CR2.child_gid,
 				N.first_name||' '||S.surname as Name
 			from child_ref CR
@@ -323,8 +312,7 @@
 				on S.gid = N.gid
 				and primary_surname = 1
 			where CR.child_gid = '".$gid."'
-				and CR.private = 0
-			order by CR2.sortval");
+				and CR.private = 0");
 		for($i=1; $row = $result->fetch(); $i++)
 		{
 			$child_gid = $row['child_gid'];
@@ -352,11 +340,9 @@
 		$result = $db->query(
 			"select
 				event_gid,
-				the_type0,
-				year1,
-				month1,
-				day1,
-				D.modifier,
+				E.the_type as EventType,
+				date1,
+				D.the_type,
 				D.quality,
 				E.description,
 				P.title,
@@ -373,18 +359,17 @@
 			left join date D
 			on ER.event_gid = D.gid
 			where ER.private = 0
-
 				and ER.gid = '".$family_gid."'");
 
 		for($i=1; $row = $result->fetch(); $i++)
 		{
-			$type = $row['the_type0'];
+			$type = $row['EventType'];
 			$name = "";
 			if ($type == 1)
 				$name = 'married ';
 			elseif ($type == 7)
 				$name = 'divorced ';
-			$date = do_date($row['year1'], $row['month1'], $row['day1'], $row['modifier'], $row['quality']);
+			$date = do_date($row['date1'], $row['the_type'], $row['quality']);
 
 			$place = $row['title'];
 			$name = $name.$date.' '.$row['description'];
@@ -415,7 +400,8 @@
 			"select
 				N.gid as person_gid,
 				N.first_name||' '||S.surname as Name,
-				R.frel0, R.mrel0
+				R.frel,
+				R.mrel
 			from family F
 			inner join child_ref R
 				on R.gid = F.gid
@@ -428,14 +414,13 @@
 			where (F.father_gid = '".$gid."'
 				or F.mother_gid = '".$gid."')
 				and F.gid = '".$family_gid."'
-				and F.private = 0
-			order by R.sortval");
+				and F.private = 0");
 		for($i=1; $row = $result->fetch(); $i++)
 		{
 			$name = "";
-			if ($genderID == 0)
+			if ($genderID == 'M')
 				$rel = $row['mrel0'];
-			elseif ($genderID == 1)
+			elseif ($genderID == 'F')
 				$rel = $row['frel0'];
 			$name = $relation[$rel];
 			$person_gid = $row['person_gid'];
@@ -457,8 +442,7 @@
 			"select
 				F.gid as family_gid,
 				N.gid as person_gid,
-				N.first_name||' '||S.surname as Name,
-				F.the_type0
+				N.first_name||' '||S.surname as Name
 			from family F
 			left join name N
 				on (N.gid = F.mother_gid
@@ -481,10 +465,10 @@
 				print("\n<h3>Families</h3>\n");
 
 			GLOBAL $genderID;
-			if ($genderID == 0)
-				$spouse = "Husband";
-			else if ($genderID == 1)
+			if ($genderID == 'M')
 				$spouse = "Wife";
+			else if ($genderID == 'F')
+				$spouse = "Husband";
 			else
 				$spouse = "Spouse";
 			$name = $row['Name'];
@@ -503,8 +487,7 @@
 		unset($result);
 		$result = $db->query(
 			"select
-				the_type0,
-				the_type1,
+				the_type,
 				value
 			from attribute
 			where gid = '".$gid."'
@@ -515,10 +498,10 @@
 			if ($i == 0)
 				print("\n<h3>Attributes</h3>\n");
 
-			switch($row['the_type0'])
+			switch($row['the_type'])
 			{
 				case 0:
-					$eventtype = $row['the_type1'];
+					$eventtype = "Custom";
 					break;
 				case 1:
 					$eventtype = "Marriage";
@@ -526,6 +509,9 @@
 				case 3:
 					$eventtype = "ID Number";
 					 break;
+				case 5:
+					$eventtype = "Number of Children";
+					break;
 				case 7:
 					$eventtype = "Nick Name";
 					 break;
@@ -547,6 +533,9 @@
 				case 30:
 					$eventtype = "Immigration";
 					 break;
+				case 32:
+					$eventtype = "Blood Group";
+					 break;
 				case 33:
 					$eventtype = "Military Service";
 					 break;
@@ -557,7 +546,7 @@
 					$eventtype = "Residence";
 					 break;
 				default:
-					$eventtype = "Unknown attribute ".$row['the_type0'];
+					$eventtype = "Unknown attribute ".$row['the_type'];
 			}
 
 			print("<p><span class=\"name\">".$eventtype.":</span> <span class=\"value\">".$row['value']."</span></p>\n");
@@ -571,10 +560,10 @@
 		$result = $db->query(
 			"select
 				path,
-				desc,
-				type0
+				description,
+				the_type
 			from url
-			where ref_gid = '".$gid."'
+			where gid = '".$gid."'
 				and private = 0");
 
 		for($i=0; $row = $result->fetch(); $i++)
@@ -583,18 +572,18 @@
 			{
 				print("\n<h3>Web Links</h3>\n");
 			}
-			switch($row['type0'])
+			switch($row['the_type'])
 			{
 				case 1:
-					$eventtype = "e-mail";
-					$path = "mailto:".$row['path'];
-					break;
-				case 2:
 					$eventtype = "Web Page";
 					$path = $row['path'];
 					 break;
+				case 2:
+					$eventtype = "e-mail";
+					$path = "mailto:".$row['path'];
+					break;
 			}
-			$desc = $row['desc'];
+			$desc = $row['description'];
 			if ($desc == "" || is_null($desc))
 				$desc = $row['path'];
 
@@ -736,7 +725,7 @@
   {
   	$gid = $_GET["gid"];
     //open the database
-    $db = new PDO('sqlite:../../.sqlite/gramps.db');
+    $db = new PDO('sqlite:../../.sqlite/gramps1.db');
 
    	do_name($db, $gid);
 
@@ -758,9 +747,9 @@
    	GLOBAL $gen;
 	$gen = 0;
 
-	 if ($genderID == 1)
+	 if ($genderID == 'M')
 		print("<div class=\"mbox AncCol0\"><a href=\"person.php?gid=".$gid."\">".$name."</a></div>\n");
-	else if ($genderID == 0)
+	else if ($genderID == 'F')
 		print("<div class=\"fbox AncCol0\"><a href=\"person.php?gid=".$gid."\">".$name."</a></div>\n");
 	do_ancestor($db, $gid, 460);
 	print("</div>\n");

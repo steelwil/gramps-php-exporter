@@ -23,7 +23,7 @@
   try
   {
     //open the database
-    $db = new PDO('sqlite:../../.sqlite/gramps.db');
+    $db = new PDO('sqlite:../../.sqlite/gramps1.db');
 
     //now output the data to a simple html table...
 
