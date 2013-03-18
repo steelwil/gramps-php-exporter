@@ -1281,7 +1281,8 @@ def main(args):
         sys.exit(0)
 
     print ('convert xml to sqlite')
-    os.remove(output_fn)
+    if os.path.exists(output_fn):
+        os.remove(output_fn)
     print('Creating empty database')
     db = Database(output_fn)
     db.batch = 1
