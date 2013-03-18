@@ -1106,6 +1106,8 @@ def export_people(db, people_node):
                 do_name(db, _id, child)
             elif _child == 'citationref':
                 do_citation_ref(db, _id, child)
+            elif _child == 'noteref':
+                do_note_ref(db, _id, child)
 
         db.query("""INSERT into person (
                 gid,
