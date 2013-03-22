@@ -868,6 +868,7 @@ def export_citations(db, citations_node):
             elif att == 'priv':
                 _private = node.get(att)
         citation_map[_handle] = _id
+        _page = ""
         for child in node:
             _child = child.tag.split('}', 1)[-1]
             #print (child.text)
