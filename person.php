@@ -615,6 +615,40 @@
 		unset($row);
 	}
 
+	function do_references($db, $gid)
+	{
+		unset($result);
+		$result = $db->query(
+			"select
+				S.title,
+				CR.gid,
+				CR.citation_gid,
+				C.confidence,
+				C.page
+			from citation_ref CR
+			left join citation C
+			on citation_gid = C.gid
+				and C.private = 0
+			left join source_ref SR
+			on SR.gid = C.gid
+				and SR.private = 0
+			inner join source S
+			on S.gid = SR.source_gid
+				and S.private = 0
+			where CR.gid = '".$gid."'
+			order by S.title");
+
+		for($i=1; $row = $result->fetch(); $i++)
+		{
+			if ($i == 1)
+			{
+				print("\n<h3>References</h3>\n");
+			}
+
+			print("<p><span class=\"name\">".$row['title'].":</span> <span class=\"value\">".$row['page']."</span></p>\n");
+		}
+		unset($row);
+	}
 
 	function do_father($db, $gid, $top)
 	{
@@ -740,6 +774,8 @@
 	do_url($db, $gid);
 
 	do_notes($db, $gid);
+
+	do_references($db, $gid);
 
 	print("\n<h3>Ancestors</h3>\n<div style=\"position:relative;\">\n");
 	GLOBAL $genderID;
