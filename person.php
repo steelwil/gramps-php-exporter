@@ -645,7 +645,11 @@
 				print("\n<h3>References</h3>\n");
 			}
 
-			print("<p><span class=\"name\">".$row['title'].":</span> <span class=\"value\">".$row['page']."</span></p>\n");
+			$page = $row['page'];
+			if ($page == "" || is_null($page))
+				print("<p><span class=\"name\">".$row['title']."</span></p>\n");
+			else
+				print("<p><span class=\"name\">".$row['title'].", </span> <span class=\"value\">".$row['page']."</span></p>\n");
 		}
 		unset($row);
 	}
