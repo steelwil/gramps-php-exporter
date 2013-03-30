@@ -319,17 +319,14 @@
 			if ($i == 1)
 			{
 				if ($child_gid == $gid)
-					print("<p><span class=\"name\">Siblings:</span> <span class=\"value\">".$i.". ".$row['Name']."</span></p>\n");
+					print("<p><span class=\"name\">Siblings:</span></p>");
 				else
-					print("<p><span class=\"name\">Siblings:</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$child_gid."\">".$row['Name']."</a></span></p>\n");
+					print("<p><span class=\"name\">Siblings:</span></p>\n");
 			}
+			if ($child_gid == $gid)
+				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". ".$row['Name']."</span></p>\n");
 			else
-			{
-				if ($child_gid == $gid)
-					print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". ".$row['Name']."</span></p>\n");
-				else
-					print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$child_gid."\">".$row['Name']."</a></span></p>\n");
-			}
+				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$child_gid."\">".$row['Name']."</a></span></p>\n");
 		}
 		unset($row);
 	}
@@ -426,7 +423,7 @@
 			$person_gid = $row['person_gid'];
 			if ($i == 1)
 			{
-				print("<p><span class=\"name\">Children:</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$person_gid."\"> ".$row['Name']."</a> ".$name."</span></p>\n");
+				print("<p><span class=\"name\">Children:</span><br /><span class=\"value\">".$i.". <a href=\"person.php?gid=".$person_gid."\"> ".$row['Name']."</a> ".$name."</span></p>\n");
 			}
 			else
 			{
@@ -646,10 +643,10 @@
 			}
 
 			$page = $row['page'];
-			if ($page == "" || is_null($page))
-				print("<p><span class=\"name\">".$row['title']."</span></p>\n");
+			if ($page == "" || is_null($page) == true)
+				print("<p><span class=\"name\">".$i.'. '.$row['title']."</span></p>\n");
 			else
-				print("<p><span class=\"name\">".$row['title'].", </span> <span class=\"value\">".$row['page']."</span></p>\n");
+				print("<p><span class=\"name\">".$i.'. '.$row['title'].", </span> <span class=\"value\">".$row['page']."</span></p>\n");
 		}
 		unset($row);
 	}
