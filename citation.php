@@ -186,27 +186,48 @@ and SR.private  = 0
 		{
 			print("\n<h3>Citation</h3>\n");
 			$ref_gid = $row['gid'];
-			print("<p><span class=\"name\">Page:</span> <span class=\"value\">".$row['C_page']."</span></p>\n");
+			if (is_null($row['C_page']) == false)
+				print("<p><span class=\"name\">Page:</span> <span class=\"value\">".$row['C_page']."</span></p>\n");
+
 			print("\n<h3>Source</h3>\n");
-			print("<p><span class=\"name\">Title:</span> <span class=\"value\">".$row['S_title']."</span></p>\n");
-			print("<p><span class=\"name\">Author:</span> <span class=\"value\">".$row['S_author']."</span></p>\n");
-			print("<p><span class=\"name\">Publish Info:</span> <span class=\"value\">".$row['S_pubinfo']."</span></p>\n");
-			print("<p><span class=\"name\">Abbreviation:</span> <span class=\"value\">".$row['S_abbrev']."</span></p>\n");
-			print("<p><span class=\"name\">Call Number:</span> <span class=\"value\">".$row['RR_callno']."</span></p>\n");
-			print("<p><span class=\"name\">Medium:</span> <span class=\"value\">".$row['RR_medium']."</span></p>\n");
+			if (is_null($row['S_title']) == false && $row['S_title'] != '')
+				print("<p><span class=\"name\">Title:</span> <span class=\"value\">".$row['S_title']."</span></p>\n");
+			if (is_null($row['S_author']) == false && $row['S_author'] != '')
+				print("<p><span class=\"name\">Author:</span> <span class=\"value\">".$row['S_author']."</span></p>\n");
+			if (is_null($row['S_pubinfo']) == false && $row['S_pubinfo'] != '')
+				print("<p><span class=\"name\">Publish Info:</span> <span class=\"value\">".$row['S_pubinfo']."</span></p>\n");
+			if (is_null($row['S_abbrev']) == false && $row['S_abbrev'] != '')
+				print("<p><span class=\"name\">Abbreviation:</span> <span class=\"value\">".$row['S_abbrev']."</span></p>\n");
+			if (is_null($row['RR_callno']) == false && $row['RR_callno'] != '')
+				print("<p><span class=\"name\">Call Number:</span> <span class=\"value\">".$row['RR_callno']."</span></p>\n");
+			if (is_null($row['RR_medium']) == false && $row['RR_medium'] != '')
+				print("<p><span class=\"name\">Medium:</span> <span class=\"value\">".$row['RR_medium']."</span></p>\n");
+
 			print("\n<h3>Repository</h3>\n");
-			print("<p><span class=\"name\">Repository:</span> <span class=\"value\">".$row['R_name']."</span></p>\n");
-			print("<p><span class=\"name\">Type:</span> <span class=\"value\">".$row['R_the_type']."</span></p>\n");
+			if (is_null($row['R_name']) != false)
+				print("<p><span class=\"name\">Repository:</span> <span class=\"value\">".$row['R_name']."</span></p>\n");
+			if (is_null($row['R_the_type']) != false)
+				print("<p><span class=\"name\">Type:</span> <span class=\"value\">".$row['R_the_type']."</span></p>\n");
+
 			print("\n<h3>Location</h3>\n");
-			print("<p><span class=\"name\">Street:</span> <span class=\"value\">".$row['L_street']."</span></p>\n");
-			print("<p><span class=\"name\">Locality:</span> <span class=\"value\">".$row['L_locality']."</span></p>\n");
-			print("<p><span class=\"name\">City:</span> <span class=\"value\">".$row['L_city']."</span></p>\n");
-			print("<p><span class=\"name\">County:</span> <span class=\"value\">".$row['L_county']."</span></p>\n");
-			print("<p><span class=\"name\"></span>State:</span> <span class=\"value\">".$row['L_state']."</span></p>\n");
-			print("<p><span class=\"name\">Country:</span> <span class=\"value\">".$row['L_country']."</span></p>\n");
-			print("<p><span class=\"name\">Postal Code:</span> <span class=\"value\">".$row['L_postal']."</span></p>\n");
-			print("<p><span class=\"name\">Phone Number:</span> <span class=\"value\">".$row['L_phone']."</span></p>\n");
-			print("<p><span class=\"name\">Parish:</span> <span class=\"value\">".$row['L_parish']."</span></p>\n");
+			if ($row['L_street'] != '')
+				print("<p><span class=\"name\">Street:</span> <span class=\"value\">".$row['L_street']."</span></p>\n");
+			if ($row['L_locality'] != '')
+				print("<p><span class=\"name\">Locality:</span> <span class=\"value\">".$row['L_locality']."</span></p>\n");
+			if ($row['L_city'] != '')
+				print("<p><span class=\"name\">City:</span> <span class=\"value\">".$row['L_city']."</span></p>\n");
+			if ($row['L_county'] != '')
+				print("<p><span class=\"name\">County:</span> <span class=\"value\">".$row['L_county']."</span></p>\n");
+			if ($row['L_state'] != '')
+				print("<p><span class=\"name\"></span>State:</span> <span class=\"value\">".$row['L_state']."</span></p>\n");
+			if ($row['L_country'] != '')
+				print("<p><span class=\"name\">Country:</span> <span class=\"value\">".$row['L_country']."</span></p>\n");
+			if ($row['L_postal'] != '')
+				print("<p><span class=\"name\">Postal Code:</span> <span class=\"value\">".$row['L_postal']."</span></p>\n");
+			if ($row['L_phone'] != '')
+				print("<p><span class=\"name\">Phone Number:</span> <span class=\"value\">".$row['L_phone']."</span></p>\n");
+			if ($row['L_parish'] != '')
+				print("<p><span class=\"name\">Parish:</span> <span class=\"value\">".$row['L_parish']."</span></p>\n");
 		}
 		unset($row);
 	}
