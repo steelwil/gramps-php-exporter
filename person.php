@@ -366,6 +366,8 @@
 				$name = 'married ';
 			elseif ($type == 7)
 				$name = 'divorced ';
+			elseif ($type == 42)
+				$name = 'residence ';
 			$date = do_date($row['date1'], $row['the_type'], $row['quality']);
 
 			$place = $row['title'];
