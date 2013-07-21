@@ -425,12 +425,9 @@
 			$person_gid = $row['person_gid'];
 			if ($i == 1)
 			{
-				print("<p><span class=\"name\">Children:</span><br /><span class=\"value\">".$i.". <a href=\"person.php?gid=".$person_gid."\"> ".$row['Name']."</a> ".$name."</span></p>\n");
+				print("<p><span class=\"name\">Children:</span></p>\n");
 			}
-			else
-			{
-				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$person_gid."\"> ".$row['Name']."</a> ".$name."</span></p>\n");
-			}
+			print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$person_gid."\"> ".$row['Name']."</a> ".$name."</span></p>\n");
 		}
 		unset($row);
 	}
