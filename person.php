@@ -318,10 +318,7 @@
 			$child_gid = $row['child_gid'];
 			if ($i == 1)
 			{
-				if ($child_gid == $gid)
-					print("<p><span class=\"name\">Siblings:</span></p>");
-				else
-					print("<p><span class=\"name\">Siblings:</span></p>\n");
+				print("<p><span class=\"name\">Siblings:</span></p>\n");
 			}
 			if ($child_gid == $gid)
 				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". ".$row['Name']."</span></p>\n");
