@@ -66,9 +66,9 @@
 		$gender = $row['gender'];
 		if ($first_name == '')
 		{
-			if ($gender == 1)
+			if ($gender == 'F')
 				$first_name = "Unknown Female";
-			elseif ($gender == 0)
+			elseif ($gender == 'M')
 				$first_name = "Unknown Male";
 			else
 				$first_name = "Unknown";
