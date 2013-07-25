@@ -99,7 +99,7 @@
 
 			$long = $row['long'];
 			$lat = $row['lat'];
-			if ($long != "" && !is_null($long))
+			if ($long != "" && !is_null($long) && $long != 0)
 				print("<p><span class=\"name\">Location:</span> <span class=\"value\">".'<a href="http://maps.google.com/maps?q='.$lat.','.$long.'&amp;t=h&amp;z=6">'.$lat.', '.$long."</a></span></p>\n");
 
 			$street = $row['street'];
