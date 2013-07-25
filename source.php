@@ -92,7 +92,7 @@
 				print("<p><span class=\"name\">Publication Information:</span> <span class=\"value\">".$pubinfo."</span></p>\n");
 
 			$author = $row['author'];
-			//if ($author != "" && !is_null($author))
+			if ($author != "" && !is_null($author))
 				print("<p><span class=\"name\">Author:</span> <span class=\"value\">".$author."</span></p>\n");
 
 			$abbrev = $row['abbrev'];
