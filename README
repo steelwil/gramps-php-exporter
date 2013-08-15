@@ -4,7 +4,7 @@ Additionally there are some PHP scripts to display your database on the web.
 
 All privacy settings are honoured.
 
-==How To==
+==How To
 1. Make an XML backup of your gramps database.
 	Family Trees -> Make Backup -> Exclude Media -> OK
 2. Convert the backup to an SQLite database
@@ -15,3 +15,5 @@ All privacy settings are honoured.
 
 I am no longer using a plugin to do this, as it no longer works with the new gramps versions.
 This method is also much much faster.
+
+[Bell Family Tree](http://www.frog.za.net/family/surname-list.php)
