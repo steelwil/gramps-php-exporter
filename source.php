@@ -161,25 +161,40 @@
 			"select
 				SR.source_gid,
 				SR.gid,
+				N.first_name||' '||S.surname as Name,
 				C.page,
-				C.confidence
+				C.confidence,
+				CR.gid as person_gid
 			from source_ref SR
-			inner join citation C
-				on C.gid = SR.gid
+			left join citation C
+			on C.gid = SR.gid
 				and C.private = 0
+			left join citation_ref CR
+			on CR.citation_gid = C.gid
+			left join name N
+			on N.gid = CR.gid
+				and N.private = 0
+			left join surname S
+			on N.gid = S.gid
 			where SR.private = 0
-				and SR.source_gid = '".$gid."'");
+				and SR.source_gid = '".$gid."'
+			order by length(page), page");
 
-		for($i=0; $row = $result->fetch(); $i++)
+		for($i=1; $row = $result->fetch(); $i++)
 		{
-			if ($i == 0)
+			if ($i == 1)
 			{
-				print("\n<h3>References</h3>\n");
+				print("\n<h3>Citations</h3>\n");
 			}
 			$ref_gid = $row['gid'];
-			$descr = "<a href=\"citation.php?gid=".$ref_gid."\">".$ref_gid."</a>";
+			$name = $row['Name'];
+			if ($name != "" && !is_null($name))
+				$descr = "<a href=\"person.php?gid=".$row['person_gid']."\">".$name."</a>";
+			else
+				$descr = "<a href=\"citation.php?gid=".$ref_gid."\">".$ref_gid."</a>";
 
-			print("<p>Citation: ".$descr." page: ".$row['page']."</p>\n");
+			print("<p>".$i.". ".$row['page'].": ".$descr."</p>\n");
+
 		}
 		unset($row);
 	}
