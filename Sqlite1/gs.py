@@ -938,6 +938,8 @@ def export_events(db, events_node):
                 do_attributes(db, _id, child)
             elif _child == 'dateval':
                 do_date(db, _id, child)
+            elif _child == 'datestr':
+                do_date(db, _id, child)
             elif _child == 'noteref':
                 do_note_ref(db, _id, child)
             elif _child == 'citationref':
