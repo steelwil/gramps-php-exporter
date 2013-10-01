@@ -211,10 +211,10 @@
 					$eventtype = "Residence";
 					 break;
 				default:
-					$eventtype = "Unknown event ".$row['the_type'];
+					$eventtype = "Unknown event ".$row['EventType'];
 			}
 
-			$date = do_date($row['date1'], $row['modifier'], $row['quality']);
+			$date = do_date($row['date1'], $row['the_type'], $row['quality']);
 			$descrip = $row['description'];
 			if ($descrip == "Estimated death date" || $descrip == "Estimated birth date")
 				$descrip = "";
