@@ -98,7 +98,8 @@
 				N.first_name,
 				S.surname,
 				N.call,
-				N.nick
+				N.nick,
+				N.private
 			from person P
 			inner join surname S
 				on P.gid = S.gid
@@ -106,12 +107,18 @@
 				on N.gid = P.gid
 				and primary_surname = 1
 			where P.gid = '".$gid."'
+				and P.private = 0
 			order by N.first_name");
 		for($i=0; $row = $result->fetch(); $i++)
-	    {
-	    	GLOBAL $name;
-	    	$surname = $row['surname'];
-	    	$name = $row['first_name']." ".$surname;
+		{
+			GLOBAL $name;
+			$surname = $row['surname'];
+			$name = $row['first_name']." ".$surname;
+			$private = $row['private'];
+
+			if ($private == 1)
+				$name = substr($name, 0, 1)." ".$surname;
+
 			echo head('Bell Family Tree - '.$name, $surname);
 
 			print("\n<h3>".$name."</h3>\n");
@@ -132,7 +139,7 @@
 				$gender = "Unknown";
 			print("<p><span class=\"name\">Gender:</span> <span class=\"value\">".$gender."</span></p>\n");
 			break;
-   		}
+		}
 		unset($row);
 	}
 
@@ -155,8 +162,10 @@
 				on PR.gid = R.event_gid
 			left join place P
 				on P.gid = PR.place_gid
+			where R.private = 0
+				and E.private = 0
 				and P.private = 0
-			where R.gid = '".$gid."'");
+				and R.gid = '".$gid."'");
 
 		for($i=0; $row = $result->fetch(); $i++)
 		{
@@ -253,10 +262,14 @@
 				CR.gid,
 				F.gid as family_gid,
 				father_gid,
-				FN.first_name||' '||FS.surname as FatherName,
+				FN.first_name as FName,
+				FS.surname as FSurname,
+				FN.private as FPrivate,
 				CR.frel,
 				mother_gid,
-				MN.first_name||' '||MS.surname as MotherName,
+				MN.first_name as MName,
+				MS.surname as MSurname,
+				MN.private as MPrivate,
 				CR.mrel
 			from child_ref CR
 			inner join family F
@@ -283,16 +296,22 @@
 			$rel = $row[frel];
 			$relationship = $relation[$rel];
 			$father = $row['father_gid'];
+			$father_name = $row['FName'].' '.$row['FSurname'];
+			if ($row['FPrivate'] == 1)
+				$father_name = substr($row['FName'], 0, 1).' '.$row['FSurname'];
 			if (!is_null($father))
-				print("<p><span class=\"name\">Father:</span> <span class=\"value\"><a href=\"person.php?gid=".$father."\">".$row['FatherName']."</a> ".$relationship."</span></p>\n");
+				print("<p><span class=\"name\">Father:</span> <span class=\"value\"><a href=\"person.php?gid=".$father."\">".$father_name."</a> ".$relationship."</span></p>\n");
 			else
 				print("<p><span class=\"name\">Father:</span> <span class=\"value\">&nbsp;</span></p>\n");
 
 			$rel = $row[mrel];
 			$relationship = $relation[$rel];
 			$mother = $row['mother_gid'];
+			$mother_name = $row['MName'].' '.$row['MSurname'];
+			if ($row['MPrivate'] == 1)
+				$mother_name = substr($row['MName'], 0, 1).' '.$row['MSurname'];
 			if (!is_null($mother))
-				print("<p><span class=\"name\">Mother:</span> <span class=\"value\"><a href=\"person.php?gid=".$mother."\">".$row['MotherName']."</a> ".$relationship."</span></p>\n");
+				print("<p><span class=\"name\">Mother:</span> <span class=\"value\"><a href=\"person.php?gid=".$mother."\">".$mother_name."</a> ".$relationship."</span></p>\n");
 			else
 				print("<p><span class=\"name\">Mother:</span> <span class=\"value\">&nbsp;</span></p>\n");
 		}
@@ -300,7 +319,9 @@
 		$result = $db->query(
 			"select
 				CR2.child_gid,
-				N.first_name||' '||S.surname as Name
+				N.first_name,
+				S.surname,
+				N.private
 			from child_ref CR
 			inner join child_ref CR2
 			on CR.gid = CR2.gid
@@ -320,10 +341,20 @@
 			{
 				print("<p><span class=\"name\">Siblings:</span></p>\n");
 			}
-			if ($child_gid == $gid)
-				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". ".$row['Name']."</span></p>\n");
+			$private = $row['private'];
+			$name = "";
+			if ($private == 1)
+			{
+				$name = substr($row['first_name'], 0, 1)." ".$row[surname];
+			}
 			else
-				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$child_gid."\">".$row['Name']."</a></span></p>\n");
+			{
+				$name = $row['first_name']." ".$row[surname];
+			}
+			if ($child_gid == $gid)
+				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". ".$name."</span></p>\n");
+			else
+				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$child_gid."\">".$name."</a></span></p>\n");
 		}
 		unset($row);
 	}
@@ -395,7 +426,9 @@
 		$result = $db->query(
 			"select
 				N.gid as person_gid,
-				N.first_name||' '||S.surname as Name,
+				N.first_name,
+				S.surname,
+				N.private,
 				R.frel,
 				R.mrel
 			from family F
@@ -403,7 +436,6 @@
 				on R.gid = F.gid
 			inner join name N
 				on N.gid = R.child_gid
-				and N.private = 0
 				and N.primary_name = 1
 			inner join surname S
 				on S.gid = N.gid
@@ -413,18 +445,21 @@
 				and F.private = 0");
 		for($i=1; $row = $result->fetch(); $i++)
 		{
-			$name = "";
+			$relationship = "";
 			if ($genderID == 'M')
 				$rel = $row['mrel0'];
 			elseif ($genderID == 'F')
 				$rel = $row['frel0'];
-			$name = $relation[$rel];
+			$relationship = $relation[$rel];
 			$person_gid = $row['person_gid'];
+			$name = $row['first_name'].' '.$row['surname'];
+			if ($row['private'] == 1)
+				$name = substr($row['first_name'], 0, 1).' '.$row['surname'];
 			if ($i == 1)
 			{
 				print("<p><span class=\"name\">Children:</span></p>\n");
 			}
-			print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$person_gid."\"> ".$row['Name']."</a> ".$name."</span></p>\n");
+			print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". <a href=\"person.php?gid=".$person_gid."\"> ".$name."</a> ".$relationship."</span></p>\n");
 		}
 		unset($row);
 	}
@@ -435,13 +470,14 @@
 			"select
 				F.gid as family_gid,
 				N.gid as person_gid,
-				N.first_name||' '||S.surname as Name
+				N.first_name,
+				S.surname,
+				N.private
 			from family F
 			left join name N
 				on (N.gid = F.mother_gid
 				or N.gid = F.father_gid)
 				and N.gid <> '".$gid."'
-				and N.private = 0
 				and N.primary_name = 1
 			inner join surname S
 				on (S.gid = F.mother_gid
@@ -464,7 +500,9 @@
 				$spouse = "Husband";
 			else
 				$spouse = "Spouse";
-			$name = $row['Name'];
+			$name = $row['first_name'].' '.$row['surname'];
+			if ($row['private'] == 1)
+				$name = substr($row['first_name'], 0, 1).' '.$row['surname'];
 			if (is_null($name))
 				print("<p><span class=\"name\">".$spouse.":</span> <span class=\"value\">&nbsp;</span></p>\n");
 			else
@@ -653,7 +691,9 @@
 		$result = $db->query(
 			"select
 				father_gid,
-				FN.first_name||\" \"||S.surname as name
+				FN.first_name,
+				S.surname,
+				FN.private
 			from child_ref CR
 			inner join family F
 				on F.gid = CR.gid
@@ -670,12 +710,15 @@
 		{
 			if (!is_null($row['father_gid']))
 			{
+				$name = $row['first_name'].' '.$row['surname'];
+				if ($row['private'] == 1)
+					$name = substr($row['first_name'], 0, 1).' '.$row['surname'];
 				$res = $row['father_gid'];
 				$left = 6 + 190*$gen;
 				$height = (int)(242/pow(2,$gen-1)+1);
 				print("<div style=\"top: ".($top+15)."px; left: ".$left."px; width: 16px\" class=\"line\"></div>\n");
 				print("<div style=\"top: ".($top+15)."px; left: ".$left."px; height: ".$height."px\" class=\"line\"></div>\n");
-				print("<div class=\"mbox AncCol".$gen."\" style=\"top: ".$top."px;\"><a href=\"person.php?gid=".$res."\">".$row['name']."</a></div>\n");
+				print("<div class=\"mbox AncCol".$gen."\" style=\"top: ".$top."px;\"><a href=\"person.php?gid=".$res."\">".$name."</a></div>\n");
 			}
 		}
 		unset($row);
@@ -688,7 +731,9 @@
 		$result = $db->query(
 			"select
 				mother_gid,
-				MN.first_name||\" \"||S.surname as name
+				MN.first_name,
+				S.surname,
+				MN.private
 			from child_ref CR
 			inner join family F
 				on F.gid = CR.gid
@@ -705,12 +750,15 @@
 		{
 			if (!is_null($row['mother_gid']))
 			{
+				$name = $row['first_name'].' '.$row['surname'];
+				if ($row['private'] == 1)
+					$name = substr($row['first_name'], 0, 1).' '.$row['surname'];
 				$res = $row['mother_gid'];
 				$left = 6 + 190*$gen;
 				$height = (int)(242/pow(2,$gen-1)+0.5);
 				print("<div style=\"top: ".($top+15)."px; left: ".$left."px; width: 16px\" class=\"line\"></div>\n");
 				print("<div style=\"top: ".($top+15-$height)."px; left: ".$left."px; height: ".$height."px\" class=\"line\"></div>\n");
-				print("<div class=\"fbox AncCol".$gen."\" style=\"top: ".$top."px;\"><a href=\"person.php?gid=".$res."\">".$row['name']."</a></div>\n");
+				print("<div class=\"fbox AncCol".$gen."\" style=\"top: ".$top."px;\"><a href=\"person.php?gid=".$res."\">".$name."</a></div>\n");
 			}
 		}
 		unset($row);
