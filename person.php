@@ -156,15 +156,15 @@
 			from event_ref R
 			inner join event E
 				on E.gid = R.event_gid
+				and E.private = 0
 			left join date D
 				on D.gid = R.event_gid
 			left join place_ref PR
 				on PR.gid = R.event_gid
 			left join place P
 				on P.gid = PR.place_gid
-			where R.private = 0
-				and E.private = 0
 				and P.private = 0
+			where R.private = 0
 				and R.gid = '".$gid."'");
 
 		for($i=0; $row = $result->fetch(); $i++)
