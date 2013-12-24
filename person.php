@@ -319,6 +319,7 @@
 		$result = $db->query(
 			"select
 				CR2.child_gid,
+				P.gender as gender,
 				N.first_name,
 				S.surname,
 				N.private
@@ -332,6 +333,8 @@
 			inner join surname S
 				on S.gid = N.gid
 				and primary_surname = 1
+			inner join person P
+				on P.gid = CR2.child_gid
 			where CR.child_gid = '".$gid."'
 				and CR.private = 0");
 		for($i=1; $row = $result->fetch(); $i++)
@@ -343,14 +346,29 @@
 			}
 			$private = $row['private'];
 			$name = "";
+
+			$gender = $row['gender'];
+			$first_name = $row['first_name'];
+
+			if ($row['first_name'] == '')
+			{
+				if ($gender == 'F')
+					$first_name = "Unknown Female";
+				elseif ($gender == 'M')
+					$first_name = "Unknown Male";
+				else
+					$first_name = "Unknown";
+			}
+
 			if ($private == 1)
 			{
-				$name = substr($row['first_name'], 0, 1)." ".$row[surname];
+				$name = substr($first_name, 0, 1)." ".$row[surname];
 			}
 			else
 			{
-				$name = $row['first_name']." ".$row[surname];
+				$name = $first_name." ".$row[surname];
 			}
+
 			if ($child_gid == $gid)
 				print("<p><span class=\"name\">&nbsp;</span> <span class=\"value\">".$i.". ".$name."</span></p>\n");
 			else
