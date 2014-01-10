@@ -510,6 +510,8 @@
 		{
 			if ($i == 0)
 				print("\n<h3>Families</h3>\n");
+			else
+				print("\n<br />\n");
 
 			GLOBAL $genderID;
 			if ($genderID == 'M')
