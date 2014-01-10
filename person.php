@@ -465,9 +465,9 @@
 		{
 			$relationship = "";
 			if ($genderID == 'M')
-				$rel = $row['mrel0'];
+				$rel = $row['mrel'];
 			elseif ($genderID == 'F')
-				$rel = $row['frel0'];
+				$rel = $row['frel'];
 			$relationship = $relation[$rel];
 			$person_gid = $row['person_gid'];
 			$name = $row['first_name'].' '.$row['surname'];
