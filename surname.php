@@ -21,7 +21,7 @@
   echo head('Surname', '');
   try
   {
-  	$surname = $_GET["surname"];
+	$surname = sqlite_escape_string($_GET["surname"]);
 	print("\n<h3>".$surname."</h3>\n");
 	if ($surname == 'Unknown')
 	{

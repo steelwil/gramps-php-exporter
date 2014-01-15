@@ -822,7 +822,8 @@
   require_once 'template.php';
   try
   {
-  	$gid = $_GET["gid"];
+  	$gid = substr($_GET["gid"], 0, 8);
+
     //open the database
     $db = new PDO('sqlite:../../.sqlite/gramps1.db');
 
