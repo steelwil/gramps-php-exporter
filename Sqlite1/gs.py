@@ -1,7 +1,7 @@
 #
 # Gramps - a GTK+/GNOME based genealogy program
 #
-# Copyright (C) 2013 william.bell@frog.za.net
+# Copyright (C) 2013-2016 william.bell@frog.za.net
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -334,22 +334,11 @@ def makeDB(db):
     db.query("""CREATE TABLE place (
                  gid TEXT PRIMARY KEY,
                  title TEXT,
+                 type TEXT,
                  long TEXT,
                  lat TEXT,
                  change INTEGER,
                  private BOOLEAN);""")
-
-    db.query("""CREATE TABLE location (
-                 gid TEXT,
-                 street TEXT,
-                 locality TEXT,
-                 city TEXT,
-                 county TEXT,
-                 state TEXT,
-                 country TEXT,
-                 postal TEXT,
-                 phone TEXT,
-                 parish TEXT);""")
 
     db.query("""CREATE TABLE place_ref (
                  gid TEXT,
@@ -463,6 +452,7 @@ def export_places(db, places_node):
         _long = 0
         _lat = 0
         _title = ''
+        _type = ''
         for att in node.attrib:
             if att == 'handle':
                 _handle = node.get(att)
@@ -472,11 +462,15 @@ def export_places(db, places_node):
                 _change = node.get(att)
             elif att == 'priv':
                 _private = node.get(att)
+            elif att == 'type':
+                _type = node.get(att)
         places_map[_handle] = _id
         for child in node:
             _child = child.tag.split('}', 1)[-1]
-            if _child == 'ptitle':
-                _title = child.text
+            if _child == 'pname':
+                for att in child.attrib:
+                    if att == 'value':
+                        _title = child.get(att)
             elif _child == 'noteref':
                 do_note_ref(db, _id, child)
             elif _child == 'coord':
@@ -485,21 +479,31 @@ def export_places(db, places_node):
                         _long = child.get(att)
                     elif att == 'lat':
                         _lat = child.get(att)
-            elif _child == 'location':
-                do_location(db, _id, child)
             elif _child == 'url':
                 do_url(db, _id, child)
 
         db.query("""INSERT into place (
                 gid,
                 title,
+                type,
                 long,
                 lat,
                 change,
-                private) values (?, ?, ?, ?, ?, ?);
+                private) values (?, ?, ?, ?, ?, ?, ?);
                 """,
-                _id, _title, _long, _lat, _change, _private)
+                _id, _title, _type, _long, _lat, _change, _private)
     db.db.commit()
+
+def export_places_ref(db, places_node):
+    print ('Exporting places ref')
+    for node in places_node:
+        for att in node.attrib:
+            if att == 'id':
+                _id = node.get(att)
+        for child in node:
+            _child = child.tag.split('}', 1)[-1]
+            if _child == 'placeref':
+                do_places_ref(db, _id, child)
 
 def do_places_ref(db, gid, child):
     #print (gid, ref_gid)
@@ -513,51 +517,6 @@ def do_places_ref(db, gid, child):
             place_gid) values (?, ?);
             """,
             gid, _place_gid)
-
-def do_location(db, gid, child):
-    _street = ''
-    _locality = ''
-    _city = ''
-    _county = ''
-    _state = ''
-    _country = ''
-    _postal = ''
-    _phone = ''
-    _parish = ''
-
-    for att in child.attrib:
-        if att == 'street':
-            _street = child.get(att)
-        elif att == 'locality':
-            _locality = child.get(att)
-        elif att == 'city':
-            _city = child.get(att)
-        elif att == 'county':
-            _county = child.get(att)
-        elif att == 'state':
-            _state = child.get(att)
-        elif att == 'country':
-            _country = child.get(att)
-        elif att == 'postal':
-            _postal = child.get(att)
-        elif att == 'phone':
-            _phone = child.get(att)
-        elif att == 'parish':
-            _parish = child.get(att)
-
-    db.query("""INSERT into location (
-            gid,
-            street,
-            locality,
-            city,
-            county,
-            state,
-            country,
-            postal,
-            phone,
-            parish) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-            """,
-            gid, _street, _locality, _city, _county, _state, _country, _postal, _phone, _parish)
 
 def do_media_ref(db, gid, media_node):
     _private = 0
@@ -1242,6 +1201,7 @@ def load_gramps(db, fn):
     export_notes(db, notes_node)
     export_media(db, media_node)
     export_places(db, places_node)
+    export_places_ref(db, places_node)
     export_repositories(db, repositories_node)
     export_sources(db, sources_node)
     export_citations(db, citations_node)

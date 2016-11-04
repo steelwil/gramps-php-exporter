@@ -4,18 +4,18 @@
 
  Copyright (C) 2012  William Bell <william.bell@frog.za.net>
 
-    Grampsphpexporter is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	Grampsphpexporter is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    Grampsphpexporter is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	Grampsphpexporter is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 	function do_date($date1, $modifier, $quality)
@@ -74,16 +74,8 @@
 				P.title,
 				ltrim(P.long) as long,
 				P.lat,
-				L.street,
-				L.locality,
-				L.city,
-				L.county,
-				L.state,
-				L.country,
 				U.path
 			from place P
-			left join location L
-			on P.gid = L.gid
 			left join url U
 			on P.gid = U.gid
 				and U.private = 0
@@ -101,30 +93,6 @@
 			$lat = $row['lat'];
 			if ($long != "" && !is_null($long) && $long != 0)
 				print("<p><span class=\"name\">Location:</span> <span class=\"value\">".'<a href="http://maps.google.com/maps?q='.$lat.','.$long.'&amp;t=h&amp;z=6">'.$lat.', '.$long."</a></span></p>\n");
-
-			$street = $row['street'];
-			if ($street != "" && !is_null($street))
-				print("<p><span class=\"name\">Street:</span> <span class=\"value\">".$street."</span></p>\n");
-
-			$locality = $row['locality'];
-			if ($locality != "" && !is_null($locality))
-				print("<p><span class=\"name\">Locality:</span> <span class=\"value\">".$locality."</span></p>\n");
-
-			$city = $row['city'];
-			if ($city != "" && !is_null($city))
-				print("<p><span class=\"name\">City:</span> <span class=\"value\">".$city."</span></p>\n");
-
-			$county = $row['county'];
-			if ($county != "" && !is_null($county))
-				print("<p><span class=\"name\">County:</span> <span class=\"value\">".$county."</span></p>\n");
-
-			$state = $row['state'];
-			if ($state != "" && !is_null($state))
-				print("<p><span class=\"name\">State:</span> <span class=\"value\">".$state."</span></p>\n");
-
-			$country = $row['country'];
-			if ($country != "" && !is_null($country))
-				print("<p><span class=\"name\">Country:</span> <span class=\"value\">".$country."</span></p>\n");
 		}
 		// http://maps.google.com/maps?ll=56.948889,24.106389&t=h&z=5
 		// http://maps.google.com/maps?ll=7.710556,50.338056&t=h&z=5
@@ -200,7 +168,8 @@
 		$result = $db->query(
 			"select
 				PR.place_gid,
-				ER.gid,
+				PR.gid,
+				ER.gid as ER_gid,
 				N.first_name||' '||S.surname as Name,
 				E.the_type as EventType,
 				E.description,
@@ -210,8 +179,13 @@
 				F.father_gid,
 				FN.first_name||' '||FS.surname as FName,
 				F.mother_gid,
-				MN.first_name||' '||MS.surname as MName
+				MN.first_name||' '||MS.surname as MName,
+				P.title,
+				P.type
 			from place_ref PR
+			left join place P
+			on P.gid = PR.gid
+				and P.private = 0
 			left join event E
 			on E.gid = PR.gid
 				and E.private = 0
@@ -242,73 +216,94 @@
 
 		for($i=0; $row = $result->fetch(); $i++)
 		{
+			$ref_gid = $row['gid'];
+			$descr = "";
 			if ($i == 0)
 			{
 				print("\n<h3>References</h3>\n");
 			}
-			$date = do_date($row['date1'], $row['the_type'], $row['quality']);
-			switch($row['EventType'])
+			if ($ref_gid[0] == 'E')
 			{
-				case 1:
-					$eventtype = "Marriage";
-					 break;
-				case 7:
-					$eventtype = "Divorce";
-					 break;
-				case 12:
-					$eventtype = "Birth";
-					 break;
-				case 13:
-					$eventtype = "Death";
-					 break;
-				case 15:
-					$eventtype = "Baptism";
-					 break;
-				case 19:
-					 $eventtype = "Burial";
-					 break;
-				case 24:
-					$eventtype = "Cremation";
-					 break;
-				case 25:
-					$eventtype = "Degree";
-					 break;
-				case 28:
-					$eventtype = "Emigration";
-					 break;
-				case 29:
-					$eventtype = "First Communion";
-					 break;
-				case 30:
-					$eventtype = "Immigration";
-					 break;
-				case 33:
-					$eventtype = "Military Service";
-					 break;
-				case 37:
-					$eventtype = "Occupation";
-					 break;
-				case 41:
-					$eventtype = "Religion";
-					 break;
-				case 42:
-					$eventtype = "Residence";
-					 break;
-				default:
-					$eventtype = "Unknown event ".$row['EventType'];
+				$date = do_date($row['date1'], $row['the_type'], $row['quality']);
+				switch($row['EventType'])
+				{
+					case 1:
+						$eventtype = "Marriage";
+						 break;
+					case 7:
+						$eventtype = "Divorce";
+						 break;
+					case 12:
+						$eventtype = "Birth";
+						 break;
+					case 13:
+						$eventtype = "Death";
+						 break;
+					case 15:
+						$eventtype = "Baptism";
+						 break;
+					case 19:
+						 $eventtype = "Burial";
+						 break;
+					case 24:
+						$eventtype = "Cremation";
+						 break;
+					case 25:
+						$eventtype = "Degree";
+						 break;
+					case 28:
+						$eventtype = "Emigration";
+						 break;
+					case 29:
+						$eventtype = "First Communion";
+						 break;
+					case 30:
+						$eventtype = "Immigration";
+						 break;
+					case 33:
+						$eventtype = "Military Service";
+						 break;
+					case 37:
+						$eventtype = "Occupation";
+						 break;
+					case 41:
+						$eventtype = "Religion";
+						 break;
+					case 42:
+						$eventtype = "Residence";
+						 break;
+					default:
+						$eventtype = "Unknown event ".$row['EventType'];
+				}
+
+				$ref_gid = $row['ER_gid'];
+				$descr = "";
+				if ($ref_gid[0] == 'I')
+				{
+					$descr = "<a href=\"person.php?gid=".$ref_gid."\">".$row['Name']."</a>";
+				}
+				else
+				{
+					$descr = "<a href=\"person.php?gid=".$row['father_gid']."\">".$row['FName']."</a> and <a href=\"person.php?gid=".$row['mother_gid']."\">".$row['MName']."</a>";
+				}
+				print("<p>".$date." ".$eventtype." ".$descr."</p>\n");
 			}
-			$ref_gid = $row['gid'];
-			$descr = "";
-			if ($ref_gid[0] == 'I')
+			elseif ($ref_gid[0] == 'I')
 			{
 				$descr = "<a href=\"person.php?gid=".$ref_gid."\">".$row['Name']."</a>";
+				print("<p>".$date." ".$eventtype." ".$descr."</p>\n");
+			}
+			elseif ($ref_gid[0] == 'P')
+			{
+				$descr = "<a href=\"place.php?gid=".$ref_gid."\">".$row['title']."</a>";
+				print("<p>Includes the ".$row['type']." of ".$descr."</p>\n");
 			}
 			else
 			{
 				$descr = "<a href=\"person.php?gid=".$row['father_gid']."\">".$row['FName']."</a> and <a href=\"person.php?gid=".$row['mother_gid']."\">".$row['MName']."</a>";
 			}
 
-			print("<p>".$date." ".$eventtype." ".$descr."</p>\n");
+
 		}
 		unset($row);
 
