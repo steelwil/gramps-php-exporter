@@ -56,6 +56,7 @@ attribute_types = {
     "Mother Age":12,
     'Witness':13,
     'Time':14,
+    'Phone':15,
     'Blood Group':32}
 
 repository_types = {
@@ -188,6 +189,16 @@ child_relationship_types = {
 
 def makeDB(db):
     print('Creating database')
+
+    db.query("""CREATE TABLE researcher (
+                  name TEXT,
+                  address TEXT,
+                  city TEXT,
+                  state TEXT,
+                  country TEXT,
+                  postal TEXT,
+                  phone TEXT,
+                  email TEXT);""")
 
     db.query("""CREATE TABLE note (
                   gid TEXT PRIMARY KEY,
@@ -986,6 +997,7 @@ def do_name(db, gid, name_node):
     _primary = 1
     _first = ''
     _call = ''
+    _title = ''
     _nick = ''
     _suffix = ''
     for att in name_node.attrib:
@@ -1022,11 +1034,12 @@ def do_name(db, gid, name_node):
             primary_name,
             first_name,
             suffix,
+            title,
             call,
             nick,
-            private) values (?, ?, ?, ?, ?, ?, ?, ?);
+            private) values (?, ?, ?, ?, ?, ?, ?, ?, ?);
             """,
-            gid, _name_type, _primary, _first, _suffix, _call, _nick, _private)
+            gid, _name_type, _primary, _first, _suffix, _title, _call, _nick, _private)
 
 def export_people(db, people_node):
     print ("Exporting people")
