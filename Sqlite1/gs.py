@@ -409,6 +409,51 @@ Convert the gramps xml database to sqlite database
 
 Report bugs to <william.bell@frog.za.net>.""")
 
+def export_header(db, header_node):
+    print ('Exporting header')
+    db.batch = 1
+    for child in header_node:
+        _child = child.tag.split('}', 1)[-1]
+        if _child == 'researcher':
+            _resname = ''
+            _resaddr = ''
+            _rescity = ''
+            _resstate = ''
+            _rescountry = ''
+            _respostal = ''
+            _resphone = ''
+            _resemail = ''
+            for child2  in child:
+                _child2 = child2.tag.split('}', 1)[-1]
+                if _child2 == 'resname':
+                    _resname = child2.text
+                elif _child2 == 'resaddr':
+                    _resaddr = child2.text
+                elif _child2 == 'rescity':
+                    _rescity = child2.text
+                elif _child2 == 'resstate':
+                    _resstate = child2.text
+                elif _child2 == 'rescountry':
+                    _rescountry = child2.text
+                elif _child2 == 'respostal':
+                    _respostal = child2.text
+                elif _child2 == 'resphone':
+                    _resphone = child2.text
+                elif _child2 == 'resemail':
+                    _resemail = child2.text
+            db.query("""INSERT into researcher (
+                    name,
+                    address,
+                    city,
+                    state,
+                    country,
+                    postal,
+                    phone,
+                    email) values (?, ?, ?, ?, ?, ?, ?, ?);
+                    """,
+                    _resname, _resaddr, _rescity, _resstate, _rescountry, _respostal, _resphone, _resemail)
+            db.db.commit()
+
 def export_notes(db, notes_node):
     print ('Exporting notes')
     db.batch = 1
@@ -967,11 +1012,11 @@ def do_event_ref(db, gid, eventref_node):
             """,
             gid, _gid, _private)
 
-def do_surname(db, gid, child):
+def do_surname(db, gid, child, primary):
     #print('do surname', gid)
     _prefix = ''
     _surname = child.text
-    _prim = 1
+    _prim = primary
     _connector = ''
     for att in child.attrib:
         if att == "derivation":
@@ -1025,7 +1070,7 @@ def do_name(db, gid, name_node):
         elif _child == 'suffix':
             _suffix = child.text
         elif _child == 'surname':
-            do_surname(db, gid, child)
+            do_surname(db, gid, child, _primary)
         #elif _child == 'noteref': todo
 
     db.query("""INSERT into name (
@@ -1043,19 +1088,19 @@ def do_name(db, gid, name_node):
 
 def export_people(db, people_node):
     print ("Exporting people")
-    for node in people_node:
+    for person_node in people_node:
         _private = 0
-        for att in node.attrib:
+        for att in person_node.attrib:
             if att == 'handle':
-                _handle = node.get(att)
+                _handle = person_node.get(att)
             elif att == 'id':
-                _id = node.get(att)
+                _id = person_node.get(att)
             elif att == 'change':
-                _change = node.get(att)
+                _change = person_node.get(att)
             elif att == 'priv':
-                _private = node.get(att)
+                _private = person_node.get(att)
         person_map[_handle] = _id
-        for child in node:
+        for child in person_node:
             _child = child.tag.split('}', 1)[-1]
             if _child == 'gender':
                 _gender = child.text
@@ -1188,11 +1233,14 @@ def load_gramps(db, fn):
 #    namespace = root.tag[root.tag.find('{')+1:root.tag.rfind('}')]
     namespace = root.tag[:root.tag.rfind('}')+1]
     print(namespace)
-    peop = tree.findall('events')
+    researcher = tree.find('researcher')
+
     for child in root:
         cld = child.tag.split('}', 1)[-1]
         print("tag: %s" % cld)
-        if cld == "people":
+        if cld == "header":
+            header_node = child
+        elif cld == "people":
             people_node = child
         elif cld == "notes":
             notes_node = child
@@ -1211,6 +1259,7 @@ def load_gramps(db, fn):
         elif cld == 'places':
             places_node = child
 
+    export_header(db, header_node)
     export_notes(db, notes_node)
     export_media(db, media_node)
     export_places(db, places_node)
