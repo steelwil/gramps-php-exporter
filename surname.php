@@ -21,7 +21,7 @@
   echo head('Surname', '');
   try
   {
-	$surname = sqlite_escape_string($_GET["surname"]);
+	$surname = $_GET["surname"];
 	print("\n<h3>".$surname."</h3>\n");
 	if ($surname == 'Unknown')
 	{
@@ -31,7 +31,7 @@
 	$db = new PDO('sqlite:../../.sqlite/gramps1.db');
 
 	//get all names with a specific surname
-	$result = $db->query(
+	$stmt = $db->prepare(
 		"select
 			P.gid as gid,
 			P.gender as gender,
@@ -52,9 +52,12 @@
 				and E.the_type = 12
 		left join date D
 			on D.gid = E.gid
-		where S.surname = '".$surname."'
+		where S.surname = ?
 		group by P.gid, first_name
 		order by first_name");
+
+	$stmt->execute(array($_GET["surname"]));
+	$result = $stmt->fetchAll();
 
  	$prevLetter = 'ZZZ';
 	foreach($result as $row)
