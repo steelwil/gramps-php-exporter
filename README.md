@@ -4,7 +4,7 @@ Additionally there are some PHP scripts to display your database on the web.
 
 All privacy settings are honoured.
 
-##How To
+## How To
 1. Make an XML backup of your gramps database.
 	* Family Trees -> Make Backup -> Exclude Media -> OK
 2. Convert the backup to an SQLite database
